@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OwnTheGame.ai - AI Business Builder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Space Grotesk', sans-serif; background: #0a0a0f; color: #fff; min-height: 100vh; overflow-x: hidden; }
+        .bg-grid { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 50px 50px; z-index: 0; }
+        .glow { position: fixed; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.3; z-index: 0; }
+        .glow-1 { top: -200px; left: -200px; background: #6366f1; }
+        .glow-2 { bottom: -200px; right: -200px; background: #8b5cf6; }
+        .container { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        header { text-align: center; margin-bottom: 40px; }
+        .logo { font-size: 2.5rem; font-weight: 700; background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 16px; }
+        .tagline { font-size: 1.2rem; color: #a1a1aa; font-weight: 300; }
+        .tagline span { color: #fff; font-weight: 600; }
+        .mode-selector { display: flex; gap: 12px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .mode-btn { background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px 24px; font-size: 0.95rem; font-weight: 600; color: #a1a1aa; cursor: pointer; font-family: inherit; transition: all 0.3s ease; display: flex; align-items: center; gap: 10px; }
+        .mode-btn:hover { border-color: #6366f1; color: #fff; }
+        .mode-btn.active { background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2)); border-color: #6366f1; color: #fff; }
+        .mode-btn span { font-size: 1.3rem; }
+        .quote-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; margin-bottom: 30px; text-align: center; }
+        .quote { font-size: 1rem; line-height: 1.8; color: #d4d4d8; font-style: italic; }
+        .quote-highlight { color: #a78bfa; font-weight: 600; }
+        .api-key-section { background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1)); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 16px; padding: 24px; margin-bottom: 30px; }
+        .api-key-section h3 { color: #22c55e; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .api-key-section p { color: #a1a1aa; font-size: 0.95rem; margin-bottom: 16px; }
+        .api-key-input { display: flex; gap: 12px; }
+        .api-key-input input { flex: 1; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px 16px; font-size: 0.9rem; color: #fff; font-family: monospace; }
+        .api-key-input input::placeholder { color: #666; }
+        .api-save-btn { background: #22c55e; border: none; border-radius: 8px; padding: 12px 24px; font-size: 0.9rem; font-weight: 600; color: #000; cursor: pointer; font-family: inherit; white-space: nowrap; }
+        .api-save-btn:hover { background: #16a34a; }
+        .api-status { display: flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 0.85rem; }
+        .api-status.connected { color: #22c55e; }
+        .api-status.not-connected { color: #ef4444; }
+        .input-section { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 24px; padding: 32px; margin-bottom: 30px; }
+        .input-label { display: block; font-size: 0.9rem; color: #71717a; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        textarea, input[type="text"] { width: 100%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 20px; font-size: 1.05rem; color: #fff; font-family: inherit; transition: all 0.3s ease; }
+        textarea:focus, input:focus { outline: none; border-color: #6366f1; background: rgba(99, 102, 241, 0.05); }
+        textarea::placeholder, input::placeholder { color: #52525b; }
+        textarea { resize: none; min-height: 120px; }
+        .submit-btn { width: 100%; background: linear-gradient(135deg, #6366f1, #8b5cf6); border: none; border-radius: 12px; padding: 18px 40px; font-size: 1.05rem; font-weight: 600; color: #fff; cursor: pointer; font-family: inherit; margin-top: 16px; transition: all 0.3s ease; position: relative; overflow: hidden; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .submit-btn.loading::after { content: ''; position: absolute; width: 20px; height: 20px; border: 2px solid transparent; border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+        .submit-btn.loading span { opacity: 0; }
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+        .agent-status { background: rgba(99, 102, 241, 0.1); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 16px; padding: 20px; margin-bottom: 20px; display: none; }
+        .agent-status h4 { color: #a78bfa; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .agent-steps { display: flex; flex-direction: column; gap: 8px; }
+        .agent-step { display: flex; align-items: center; gap: 12px; padding: 8px 12px; background: rgba(0,0,0,0.2); border-radius: 8px; font-size: 0.9rem; }
+        .agent-step.running { background: rgba(99, 102, 241, 0.2); border: 1px solid #6366f1; }
+        .agent-step.done { background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; }
+        .agent-step .icon { font-size: 1.2rem; }
+        .agent-step .text { flex: 1; }
+        .agent-step .status { font-size: 0.8rem; color: #a1a1aa; }
+        .response-section { display: none; animation: fadeIn 0.5s ease; }
+        .response-section.show { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .response-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 28px; margin-bottom: 20px; }
+        .response-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .response-icon { font-size: 1.8rem; }
+        .response-title { font-size: 1.15rem; font-weight: 600; color: #fff; }
+        .highlight-box { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 12px; padding: 20px; margin: 16px 0; }
+        .highlight-box h4 { color: #a78bfa; font-size: 0.95rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .highlight-box p { color: #e4e4e7; }
+        .code-box { background: #000; border-radius: 12px; padding: 20px; margin: 16px 0; overflow-x: auto; font-family: 'Monaco', 'Menlo', monospace; font-size: 0.9rem; color: #a1a1aa; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .copy-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 8px 16px; font-size: 0.85rem; color: #fff; cursor: pointer; font-family: inherit; transition: all 0.3s ease; margin-top: 10px; }
+        .copy-btn:hover { background: rgba(255,255,255,0.2); }
+        .name-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0; }
+        .name-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 16px; text-align: center; transition: all 0.3s ease; cursor: pointer; }
+        .name-card:hover { border-color: #6366f1; background: rgba(99, 102, 241, 0.1); transform: translateY(-2px); }
+        .name-card .name { font-size: 1.1rem; font-weight: 600; color: #fff; margin-bottom: 6px; }
+        .name-card .domain { font-size: 0.85rem; color: #6366f1; }
+        .email-template { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px; margin: 16px 0; }
+        .email-template .email-header { color: #6366f1; font-weight: 600; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .email-template .email-body { color: #d4d4d8; line-height: 1.8; white-space: pre-wrap; }
+        .schedule-box { background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.1)); border: 1px solid rgba(34, 197, 94, 0.3); border-radius: 12px; padding: 20px; margin: 16px 0; }
+        .schedule-box h4 { color: #22c55e; font-size: 1rem; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .progress-steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 30px; flex-wrap: wrap; }
+        .progress-step { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 100px; padding: 8px 16px; font-size: 0.8rem; color: #52525b; display: flex; align-items: center; gap: 6px; }
+        .progress-step.completed { background: rgba(34, 197, 94, 0.2); border-color: #22c55e; color: #22c55e; }
+        .progress-step.active { background: rgba(99, 102, 241, 0.2); border-color: #6366f1; color: #6366f1; }
+        footer { text-align: center; margin-top: 60px; padding-top: 30px; border-top: 1px solid rgba(255,255,255,0.05); color: #52525b; font-size: 0.85rem; }
+        @media (max-width: 640px) { .container { padding: 30px 16px; } .logo { font-size: 1.8rem; } .mode-btn { padding: 12px 16px; font-size: 0.85rem; } .input-section, .response-card { padding: 20px; } .name-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="glow glow-1"></div>
+    <div class="glow glow-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo">OwnTheGame.ai</div>
+            <p class="tagline">AI-Powered <span>Business Builder</span></p>
+        </header>
+
+        <div class="quote-box">
+            <p class="quote">"The entrepreneur <span class="quote-highlight">works hard</span>. The billionaire <span class="quote-highlight">builds systems</span>."</p>
+        </div>
+
+        <div class="api-key-section">
+            <h3>🔑 Free AI Power-Up (Optional)</h3>
+            <p>Add a free Groq API key for AI-generated content. Get one free at <strong>console.groq.com</strong>. Works without it too!</p>
+            <div class="api-key-input">
+                <input type="text" id="apiKey" placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+                <button class="api-save-btn" onclick="saveApiKey()">Save Key</button>
+            </div>
+            <div class="api-status" id="apiStatus">
+                <span id="apiStatusIcon">⚪</span>
+                <span id="apiStatusText">Using template mode (add API key for AI)</span>
+            </div>
+        </div>
+
+        <div class="progress-steps" id="progressSteps">
+            <span class="progress-step" id="step1">1. Understand</span>
+            <span class="progress-step" id="step2">2. Name</span>
+            <span class="progress-step" id="step3">3. Landing Page</span>
+            <span class="progress-step" id="step4">4. Sales Emails</span>
+            <span class="progress-step" id="step5">5. Find Leads</span>
+            <span class="progress-step" id="step6">6. Ready!</span>
+        </div>
+
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('agent')" id="mode-agent"><span>🤖</span> AI Agent</button>
+            <button class="mode-btn" onclick="setMode('names')" id="mode-names"><span>💎</span> Names</button>
+            <button class="mode-btn" onclick="setMode('landing')" id="mode-landing"><span>🎨</span> Landing Page</button>
+            <button class="mode-btn" onclick="setMode('emails')" id="mode-emails"><span>📧</span> Emails</button>
+            <button class="mode-btn" onclick="setMode('leads')" id="mode-leads"><span>👥</span> Find Leads</button>
+        </div>
+
+        <div class="input-section">
+            <div id="agentMode">
+                <label class="input-label">What business do you want to build? (Be specific!)</label>
+                <textarea id="agentInput" placeholder="Example: I want to offer AI-powered video editing services to local restaurants in Los Angeles..."></textarea>
+                <button class="submit-btn" id="agentSubmit" onclick="runAgent()"><span>🤖 LET AI BUILD MY BUSINESS</span></button>
+            </div>
+            <div id="namesMode" style="display:none;">
+                <label class="input-label">What does your business do?</label>
+                <input type="text" id="nameInput" placeholder="Video editing for restaurants...">
+                <button class="submit-btn" onclick="generateNames()"><span>💎 GENERATE NAMES</span></button>
+            </div>
+            <div id="landingMode" style="display:none;">
+                <label class="input-label">Your service</label>
+                <input type="text" id="landingService" placeholder="AI automation for gyms...">
+                <label class="input-label" style="margin-top:16px;">Company name</label>
+                <input type="text" id="landingName" placeholder="Leave empty for auto-generate">
+                <button class="submit-btn" onclick="buildLandingPage()"><span>🎨 BUILD LANDING PAGE</span></button>
+            </div>
+            <div id="emailsMode" style="display:none;">
+                <label class="input-label">Your service/product</label>
+                <input type="text" id="emailProduct" placeholder="Video editing for restaurants...">
+                <label class="input-label" style="margin-top:16px;">Target customer</label>
+                <input type="text" id="emailTarget" placeholder="Restaurant owners in LA...">
+                <button class="submit-btn" onclick="writeEmails()"><span>📧 WRITE SALES EMAILS</span></button>
+            </div>
+            <div id="leadsMode" style="display:none;">
+                <label class="input-label">Your service</label>
+                <input type="text" id="leadsService" placeholder="Video editing for restaurants...">
+                <label class="input-label" style="margin-top:16px;">Where are your customers?</label>
+                <input type="text" id="leadsLocation" placeholder="Los Angeles, CA...">
+                <button class="submit-btn" onclick="findLeads()"><span>👥 FIND CUSTOMERS</span></button>
+            </div>
+        </div>
+
+        <div class="agent-status" id="agentStatus">
+            <h4>🤖 AI Agent Working...</h4>
+            <div class="agent-steps">
+                <div class="agent-step" id="aStep1"><span class="icon">⏳</span><span class="text">Understanding your request</span><span class="status">Pending</span></div>
+                <div class="agent-step" id="aStep2"><span class="icon">⏳</span><span class="text">Generating company names</span><span class="status">Pending</span></div>
+                <div class="agent-step" id="aStep3"><span class="icon">⏳</span><span class="text">Building landing page</span><span class="status">Pending</span></div>
+                <div class="agent-step" id="aStep4"><span class="icon">⏳</span><span class="text">Writing sales emails</span><span class="status">Pending</span></div>
+                <div class="agent-step" id="aStep5"><span class="icon">⏳</span><span class="text">Finding potential customers</span><span class="status">Pending</span></div>
+            </div>
+        </div>
+
+        <div class="response-section" id="responseSection"></div>
+
+        <footer><p>Stop trading time for money. Start building equity.</p></footer>
+    </div>
+
+    <script>
+        let apiKey = localStorage.getItem('groq_api_key') || '';
+        let currentMode = 'agent';
+
+        if (apiKey) { document.getElementById('apiKey').value = apiKey; updateApiStatus(true); }
+
+        function saveApiKey() {
+            const input = document.getElementById('apiKey').value.trim();
+            if (input) { apiKey = input; localStorage.setItem('groq_api_key', apiKey); updateApiStatus(true); alert('API key saved! AI is now active.'); }
+        }
+
+        function updateApiStatus(connected) {
+            const status = document.getElementById('apiStatus');
+            if (connected && apiKey) { status.className = 'api-status connected'; document.getElementById('apiStatusIcon').textContent = '🟢'; document.getElementById('apiStatusText').textContent = 'AI Mode Active - Using Groq API (free)'; }
+            else { status.className = 'api-status not-connected'; document.getElementById('apiStatusIcon').textContent = '⚪'; document.getElementById('apiStatusText').textContent = 'Using template mode (add API key for AI)'; }
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('mode-' + mode).classList.add('active');
+            document.getElementById('agentMode').style.display = mode === 'agent' ? 'block' : 'none';
+            document.getElementById('namesMode').style.display = mode === 'names' ? 'block' : 'none';
+            document.getElementById('landingMode').style.display = mode === 'landing' ? 'block' : 'none';
+            document.getElementById('emailsMode').style.display = mode === 'emails' ? 'block' : 'none';
+            document.getElementById('leadsMode').style.display = mode === 'leads' ? 'block' : 'none';
+            document.getElementById('responseSection').classList.remove('show');
+        }
+
+        function setLoading(btnId, loading) {
+            const btn = document.getElementById(btnId);
+            if (loading) { btn.classList.add('loading'); btn.disabled = true; }
+            else { btn.classList.remove('loading'); btn.disabled = false; }
+        }
+
+        function updateAgentStep(step, status) {
+            const el = document.getElementById('aStep' + step);
+            if (!el) return;
+            if (status === 'running') { el.className = 'agent-step running'; el.querySelector('.icon').textContent = '🔄'; el.querySelector('.status').textContent = 'Working...'; }
+            else if (status === 'done') { el.className = 'agent-step done'; el.querySelector('.icon').textContent = '✅'; el.querySelector('.status').textContent = 'Done!'; }
+        }
+
+        function updateProgress(step) {
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById('step' + i);
+                if (i < step) { el.classList.add('completed'); el.classList.remove('active'); }
+                else if (i === step) { el.classList.add('active'); el.classList.remove('completed'); }
+                else { el.classList.remove('active', 'completed'); }
+            }
+        }
+
+        function showResponse(html) {
+            const section = document.getElementById('responseSection');
+            section.innerHTML = html;
+            section.classList.add('show');
+            section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function escapeHtml(text) { return text.replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+        function escapeForJs(text) { return text.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$'); }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!')).catch(err => console.error(err));
+        }
+
+        async function callAI(prompt) {
+            if (!apiKey) return null;
+            try {
+                const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + apiKey, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model: 'llama-3.1-8b-instant', messages: [{ role: 'user', content: prompt }], temperature: 0.7, max_tokens: 2000 })
+                });
+                if (!response.ok) throw new Error('API error');
+                const data = await response.json();
+                return data.choices[0].message.content;
+            } catch (err) { console.log('AI call failed, using template'); return null; }
+        }
+
+        async function runAgent() {
+            const input = document.getElementById('agentInput').value.trim();
+            if (!input) { document.getElementById('agentInput').focus(); return; }
+            setLoading('agentSubmit', true);
+            document.getElementById('agentStatus').style.display = 'block';
+            
+            for (let i = 1; i <= 5; i++) { const el = document.getElementById('aStep' + i); el.className = 'agent-step'; el.querySelector('.icon').textContent = '⏳'; el.querySelector('.status').textContent = 'Pending'; }
+            
+            updateAgentStep(1, 'running');
+            await sleep(500);
+            const understanding = await callAI('Analyze this business idea: "' + input + '". Give me 4 bullet points: 1) Service 2) Target customer 3) Value proposition 4) Pricing. Keep very brief.');
+            updateAgentStep(1, 'done');
+            
+            updateAgentStep(2, 'running');
+            await sleep(500);
+            const namesResult = await callAI('Generate 6 creative company names for: ' + input + '. List one per line, simple names.');
+            updateAgentStep(2, 'done');
+            
+            updateAgentStep(3, 'running');
+            await sleep(500);
+            const landingResult = await callAI('For ' + input + ', give me: 1) Hero headline (under 10 words) 2) Subheadline (under 20 words) 3) 3 benefits. Format clearly.');
+            updateAgentStep(3, 'done');
+            
+            updateAgentStep(4, 'running');
+            await sleep(500);
+            const emailResult = await callAI('Write a short sales email for: ' + input + '. Under 150 words. Casual but professional. End with a question.');
+            updateAgentStep(4, 'done');
+            
+            updateAgentStep(5, 'running');
+            await sleep(500);
+            const leadsResult = await callAI('For: ' + input + ', list 5 places to find customers. Be specific (platform names, groups, etc).');
+            updateAgentStep(5, 'done');
+            
+            setLoading('agentSubmit', false);
+            updateProgress(6);
+            
+            const names = namesResult ? namesResult.split('\n').filter(n => n.trim()) : ['SwiftHub', 'PrimeFlow', 'ElitePro', 'NovaWorks'];
+            
+            showResponse(
+                '<div class="response-card"><div class="response-header"><span class="response-icon">🤖</span><span class="response-title">AI Analysis Complete!</span></div><div class="highlight-box"><h4>🎯 Business Understanding</h4><p>' + (understanding || 'Based on your input') + '</p></div></div>' +
+                '<div class="response-card"><div class="response-header"><span class="response-icon">💎</span><span class="response-title">AI-Generated Company Names</span></div><div class="name-grid">' + names.map(name => { const cleanName = name.replace(/^\d+\.\s*/, '').trim(); return '<div class="name-card"><div class="name">' + cleanName + '</div><div class="domain">' + cleanName.toLowerCase().replace(/[^a-z]/g, '') + '.com</div></div>'; }).join('') + '</div></div>' +
+                '<div class="response-card"><div class="response-header"><span class="response-icon">🎨</span><span class="response-title">AI Landing Page Copy</span></div><div class="highlight-box"><h4>✨ Hero & Benefits</h4><p style="white-space:pre-wrap;">' + (landingResult || 'Professional service ready to help you.') + '</p></div></div>' +
+                '<div class="response-card"><div class="response-header"><span class="response-icon">📧</span><span class="response-title">Your Sales Email</span></div><div class="email-template"><div class="email-header">Ready to Send</div><div class="email-body">' + (emailResult || 'Hi, I help businesses with...') + '</div></div></div>' +
+                '<div class="response-card"><div class="response-header"><span class="response-icon">👥</span><span class="response-title">Where to Find Customers</span></div><div class="highlight-box"><p>' + (leadsResult || 'LinkedIn, Facebook Groups, Yelp, Nextdoor, Industry Associations') + '</p></div></div>' +
+                '<div class="response-card"><div class="schedule-box"><h4>📅 Next Step: Get Paid</h4><p>1. Pick your company name</p><p>2. Create free Calendly: calendly.com</p><p>3. Send the email above</p><p>4. Book calls and CLOSE!</p></div></div>'
+            );
+        }
+
+        function generateTemplateNames(idea) {
+            const prefixes = ['Swift', 'Smart', 'Prime', 'Elite', 'Pro', 'Nova', 'Apex', 'Peak'];
+            const suffixes = ['Hub', 'Lab', 'Works', 'Studio', 'Go', 'Pro', 'X', 'Co'];
+            return prefixes.slice(0, 6).map((p, i) => p + suffixes[i]);
+        }
+
+        async function generateNames() {
+            const idea = document.getElementById('nameInput').value.trim();
+            if (!idea) { document.getElementById('nameInput').focus(); return; }
+            setLoading('nameSubmit', true);
+            updateProgress(2);
+            let names;
+            if (apiKey) { const result = await callAI('Generate 8 company names for: ' + idea + '. List one per line.'); names = result ? result.split('\n').filter(n => n.trim()) : generateTemplateNames(idea); }
+            else { await sleep(1000); names = generateTemplateNames(idea); }
+            setLoading('nameSubmit', false);
+            showResponse('<div class="response-card"><div class="response-header"><span class="response-icon">💎</span><span class="response-title">Company Names</span></div><div class="name-grid">' + names.map(name => { const cleanName = name.replace(/^\d+\.\s*/, '').trim(); return '<div class="name-card"><div class="name">' + cleanName + '</div><div class="domain">' + cleanName.toLowerCase().replace(/[^a-z]/g, '') + '.com</div></div>'; }).join('') + '</div></div>');
+        }
+
+        async function buildLandingPage() {
+            const service = document.getElementById('landingService').value.trim() || 'Professional Service';
+            const name = document.getElementById('landingName').value.trim() || 'YourBrand';
+            setLoading('landingSubmit', true);
+            updateProgress(3);
+            let copy;
+            if (apiKey) { copy = await callAI('For ' + service + ', generate: 1) Hero headline (under 10 words), 2) Subheadline (under 20 words), 3) 3 benefits. Format clearly.'); }
+            else { await sleep(1000); copy = 'HERO: ' + service + ' - Done Right\nSUBHEAD: Professional results, fast turnaround\nBENEFITS:\n• Save time\n• Get results fast\n• 100% satisfaction'; }
+            setLoading('landingSubmit', false);
+            const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>' + name + '</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif}.hero{background:linear-gradient(135deg,#667eea,#764ba2);color:white;padding:100px 20px;text-align:center}h1{font-size:3rem;margin-bottom:20px}p{font-size:1.3rem;opacity:0.9;max-width:600px;margin:0 auto 30px}.cta{background:white;color:#667eea;padding:16px 40px;border:none;border-radius:50px;font-size:1.1rem;font-weight:bold;text-decoration:none;display:inline-block}.features{padding:80px 20px;max-width:1000px;margin:0 auto;text-align:center}h2{margin-bottom:50px;font-size:2rem}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:30px}.card{padding:40px;background:#f9f9f9;border-radius:20px}h3{margin-bottom:15px}footer{background:#333;color:white;padding:40px;text-align:center}@media(max-width:640px){h1{font-size:2rem}}</style></head><body><section class="hero"><h1>' + name + '</h1><p>' + service + '</p><a href="#contact" class="cta">Get Started</a></section><section class="features"><h2>Why Choose Us</h2><div class="grid"><div class="card"><h3>Fast</h3><p>Quick turnaround</p></div><div class="card"><h3>Affordable</h3><p>Right price</p></div><div class="card"><h3>Results</h3><p>Real outcomes</p></div></div></section><footer id="contact"><p>2024 ' + name + '</p></footer></body></html>';
+            showResponse('<div class="response-card"><div class="response-header"><span class="response-icon">🎨</span><span class="response-title">Your Landing Page</span></div><div class="code-box">' + escapeHtml(html) + '</div><button class="copy-btn" onclick="copyToClipboard(\`' + escapeForJs(html) + '\`)">📋 Copy Full HTML</button></div><div class="response-card"><div class="highlight-box"><h4>Deploy for Free</h4><p>1. Copy HTML above<br>2. Go to vercel.com<br>3. Create site, paste code<br>4. LIVE!</p></div></div>');
+        }
+
+        async function writeEmails() {
+            const product = document.getElementById('emailProduct').value.trim();
+            const target = document.getElementById('emailTarget').value.trim() || 'your customers';
+            if (!product) { document.getElementById('emailProduct').focus(); return; }
+            setLoading('emailSubmit', true);
+            updateProgress(4);
+            let email1, email2;
+            if (apiKey) {
+                const result = await callAI('Write 2 short sales emails for: ' + product + '. Target: ' + target + '. Email 1: Initial outreach (under 100 words). Email 2: Follow up (under 80 words).');
+                const parts = result ? result.split('Email 2:') : [];
+                email1 = parts[0] || 'Hi, I help with ' + product + '.';
+                email2 = parts[1] || 'Just following up...';
+            } else {
+                await sleep(1000);
+                email1 = 'Subject: Quick question\n\nHi,\n\nI help businesses with ' + product + '.\n\nWould you be open to a 15-minute call?\n\nBest';
+                email2 = 'Subject: Following up\n\nHi,\n\nJust following up on my last message. Happy to share how we helped similar businesses!\n\nBest';
+            }
+            setLoading('emailSubmit', false);
+            showResponse('<div class="response-card"><div class="response-header"><span class="response-icon">📧</span><span class="response-title">Sales Emails</span></div><div class="email-template"><div class="email-header">Email 1 - Initial</div><div class="email-body">' + email1 + '</div></div><div class="email-template"><div class="email-header">Email 2 - Follow Up</div><div class="email-body">' + email2 + '</div></div><button class="copy-btn" onclick="copyToClipboard(\`' + escapeForJs(email1 + '\n\n---\n\n' + email2) + '\`)">📋 Copy All</button></div>');
+        }
+
+        async function findLeads() {
+            const service = document.getElementById('leadsService').value.trim();
+            const location = document.getElementById('leadsLocation').value.trim() || 'your area';
+            if (!service) { document.getElementById('leadsService').focus(); return; }
+            setLoading('leadsSubmit', true);
+            updateProgress(5);
+            let places;
+            if (apiKey) { places = await callAI('List 5 best places to find customers for: ' + service + ' targeting ' + location + '. Be specific.'); }
+            else { await sleep(1000); places = '• LinkedIn - Search for your industry in ' + location + '\n• Facebook Groups - Join local business groups\n• Yelp - Find similar businesses\n• Nextdoor - Great for local services\n• Industry associations - Local chapters'; }
+            setLoading('leadsSubmit', false);
+            showResponse('<div class="response-card"><div class="response-header"><span class="response-icon">👥</span><span class="response-title">Where to Find Customers</span></div><div class="highlight-box"><h4>📍 ' + location + '</h4><p style="white-space:pre-wrap;">' + places + '</p></div></div><div class="response-card"><div class="schedule-box"><h4>Ready to Start?</h4><p>1. Pick a platform above</p><p>2. Send your sales email</p><p>3. Book calls with Calendly</p><p>4. GET PAID!</p></div></div>');
+        }
+
+        function sleep(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+        document.getElementById('agentInput').addEventListener('keydown', e => { if (e.key === 'Enter' && e.ctrlKey) runAgent(); });
+    </script>
+</body>
+</html>
